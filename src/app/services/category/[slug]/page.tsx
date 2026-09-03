@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { getCategory, getCategories, getCatalog } from "@/lib/api/services";
 import { buildCategoryTree } from "@/lib/catalog";
 import { ApiError } from "@/lib/api/client";
+import { servicePath } from "@/lib/env";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -50,7 +51,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <>
       <Section spacing="compact" tone="sunken" border>
-        <Breadcrumbs items={[{ label: "Services", href: "/services" }, { label: category.name }]} />
+        <Breadcrumbs items={[{ label: "Services", href: servicePath() }, { label: category.name }]} />
         <h1 className="mt-3 font-display text-h1 text-ink-900">{category.name}</h1>
         {category.description ? (
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-text-secondary">{category.description}</p>

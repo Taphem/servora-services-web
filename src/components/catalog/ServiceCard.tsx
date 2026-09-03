@@ -3,11 +3,12 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { PriceTag } from "@/components/catalog/PriceTag";
 import { bookingModeLabels } from "@/lib/catalog";
+import { servicePath } from "@/lib/env";
 import type { Service } from "@/lib/api/schemas";
 
 export function ServiceCard({ service }: { service: Service }) {
   return (
-    <Link href={`/services/${service.slug}`} className="block rounded-lg">
+    <Link href={servicePath(`/${service.slug}`)} className="block rounded-lg">
       <Card interactive className="flex h-full flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-h4 font-medium text-ink-900">{service.name}</h3>

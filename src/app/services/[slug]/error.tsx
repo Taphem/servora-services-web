@@ -5,6 +5,7 @@ import { Section } from "@/components/ui/Section";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Button } from "@/components/ui/Button";
 import { ApiError } from "@/lib/api/client";
+import { servicePath } from "@/lib/env";
 
 export default function ServiceDetailError({
   error,
@@ -32,7 +33,7 @@ export default function ServiceDetailError({
             <Button variant="primary" onClick={reset}>
               Try again
             </Button>
-            <Button href="/services" variant="secondary">
+            <Button href={servicePath()} variant="secondary">
               Browse all services
             </Button>
           </div>

@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { ArrowRight, Layers } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { servicePath } from "@/lib/env";
 import type { CategoryTreeNode } from "@/lib/catalog";
 
 export function CategoryCard({ category }: { category: CategoryTreeNode }) {
   const childCount = category.children.length;
 
   return (
-    <Link href={`/services/category/${category.slug}`} className="block rounded-lg">
+    <Link href={servicePath(`/category/${category.slug}`)} className="block rounded-lg">
       <Card interactive className="flex h-full flex-col gap-3 p-5">
         <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-soft text-text-brand">
           <Layers size={20} aria-hidden />

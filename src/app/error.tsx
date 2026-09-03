@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Container } from "@/components/ui/Container";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Button } from "@/components/ui/Button";
+import { servicePath } from "@/lib/env";
 
 /**
  * Root-level error boundary — catches anything an individual route
@@ -27,7 +28,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
               <Button variant="primary" onClick={reset}>
                 Try again
               </Button>
-              <Button href="/services" variant="secondary">
+              <Button href={servicePath()} variant="secondary">
                 Back to services
               </Button>
             </div>

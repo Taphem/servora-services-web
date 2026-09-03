@@ -19,4 +19,31 @@ export const env = {
    * *.onrender.com URL. Defaults to a local gateway for development.
    */
   apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080",
+
+  /**
+   * The path this app is mounted under in Servora's path-based
+   * multi-zone deployment (https://servora.hemandu.com/services). The
+   * same value drives `assetPrefix` in next.config.ts (which reads
+   * process.env directly, since Next.js evaluates that file outside
+   * this module) so generated JS/CSS/font asset URLs resolve under the
+   * same prefix as the app's own routes. Defaults to "/services" so the
+   * app keeps working with zero configuration; set to "" to deploy this
+   * app at an origin's root instead.
+   */
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? "/services",
 } as const;
+
+/**
+ * Builds an in-app absolute href under this app's configured mount path
+ * (`env.basePath`) instead of a hardcoded "/services" literal, so the
+ * mount path — or moving this app to a different path entirely — only
+ * ever needs to change in one place (NEXT_PUBLIC_BASE_PATH). Every
+ * internal `<Link>`/`redirect()` target in this app should be built
+ * with this helper.
+ *
+ * `segment` is appended as-is and should already start with "/" (e.g.
+ * `servicePath("/category/ac-repair")`); omit it for the mount root.
+ */
+export function servicePath(segment = ""): string {
+  return `${env.basePath}${segment}`;
+}

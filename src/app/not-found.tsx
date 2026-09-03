@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { MapPinOff } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { servicePath } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Page not found",
@@ -28,7 +29,7 @@ export default function NotFound() {
         </p>
 
         <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:justify-center">
-          <Button href="/services" variant="primary" size="lg" className="w-full sm:w-auto">
+          <Button href={servicePath()} variant="primary" size="lg" className="w-full sm:w-auto">
             Browse services
           </Button>
         </div>

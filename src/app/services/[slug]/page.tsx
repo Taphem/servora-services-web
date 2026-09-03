@@ -9,6 +9,7 @@ import { RequirementForm } from "@/components/requirements/RequirementForm";
 import { getService, getCategory, getServiceRequirements } from "@/lib/api/services";
 import { bookingModeLabels, pricingModelLabels } from "@/lib/catalog";
 import { ApiError } from "@/lib/api/client";
+import { servicePath } from "@/lib/env";
 import type { Service } from "@/lib/api/schemas";
 
 interface ServiceDetailPageProps {
@@ -51,8 +52,8 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
       <Section spacing="compact" tone="sunken" border>
         <Breadcrumbs
           items={[
-            { label: "Services", href: "/services" },
-            ...(category ? [{ label: category.name, href: `/services/category/${category.slug}` }] : []),
+            { label: "Services", href: servicePath() },
+            ...(category ? [{ label: category.name, href: servicePath(`/category/${category.slug}`) }] : []),
             { label: service.name },
           ]}
         />

@@ -8,6 +8,7 @@ import { CatalogFilters } from "@/components/catalog/CatalogFilters";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getCategories, getCatalog } from "@/lib/api/services";
 import { buildCategoryTree } from "@/lib/catalog";
+import { servicePath } from "@/lib/env";
 import type { BookingMode } from "@/lib/api/schemas";
 
 export const metadata: Metadata = {
@@ -78,7 +79,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
               }
               action={
                 hasFilters ? (
-                  <Link href="/services" className="text-sm font-medium text-text-brand hover:underline">
+                  <Link href={servicePath()} className="text-sm font-medium text-text-brand hover:underline">
                     Clear filters
                   </Link>
                 ) : undefined
