@@ -63,6 +63,26 @@ function buildUrl(path: string, searchParams?: Record<string, SearchParamValue>)
   return url.toString();
 }
 
+/**
+ * Every call site of apiGet() today runs inside a Server Component or
+ * generateMetadata(), so this only ever executes on the server (Vercel's
+ * function logs), never in the browser — the customer-facing message
+ * stays generic (see the various error.tsx files). This exists because
+ * Next.js redacts a Server Component's thrown error before it reaches a
+ * Client error boundary in production (a generic digest-only message,
+ * by design, to avoid leaking arbitrary error text to the browser), so
+ * without an explicit log here, a failure upstream of this app — e.g.
+ * the API Gateway or a downstream service being unreachable or
+ * misconfigured — would otherwise be invisible anywhere a developer
+ * could see it. Logs only the backend's own structured error fields
+ * (code/message/requestId — already meant to be shared for support and
+ * cross-service log correlation) plus the request URL, never response
+ * bodies or headers that might carry something unexpected.
+ */
+function logFetchFailure(url: string, code: string, message: string, status?: number, requestId?: string) {
+  console.error(`[servora-services-web] GET ${url} failed`, { status, code, requestId, message });
+}
+
 export async function apiGet<T>(path: string, options: GetOptions<T>): Promise<T> {
   const url = buildUrl(path, options.searchParams);
   const timeoutSignal = AbortSignal.timeout(options.timeoutMs ?? 10_000);
@@ -78,8 +98,10 @@ export async function apiGet<T>(path: string, options: GetOptions<T>): Promise<T
     });
   } catch (cause) {
     if (cause instanceof Error && cause.name === "TimeoutError") {
+      logFetchFailure(url, ClientErrorCode.Timeout, "request timed out");
       throw new ApiError(ClientErrorCode.Timeout, "The request took too long. Please try again.", 0);
     }
+    logFetchFailure(url, ClientErrorCode.NetworkError, cause instanceof Error ? cause.message : String(cause));
     throw new ApiError(
       ClientErrorCode.NetworkError,
       "Couldn't reach the server. Check your connection and try again.",
@@ -97,6 +119,13 @@ export async function apiGet<T>(path: string, options: GetOptions<T>): Promise<T
   if (!response.ok) {
     const errorBody = apiErrorEnvelopeSchema.safeParse(payload);
     if (errorBody.success) {
+      logFetchFailure(
+        url,
+        errorBody.data.error.code,
+        errorBody.data.error.message,
+        response.status,
+        errorBody.data.error.requestId,
+      );
       throw new ApiError(
         errorBody.data.error.code,
         errorBody.data.error.message,
@@ -104,6 +133,7 @@ export async function apiGet<T>(path: string, options: GetOptions<T>): Promise<T
         errorBody.data.error.requestId,
       );
     }
+    logFetchFailure(url, ClientErrorCode.MalformedResponse, "non-2xx response without the expected error envelope", response.status);
     throw new ApiError(
       ClientErrorCode.MalformedResponse,
       "Something went wrong on our end. Please try again.",
@@ -113,6 +143,7 @@ export async function apiGet<T>(path: string, options: GetOptions<T>): Promise<T
 
   const result = options.schema.safeParse(payload);
   if (!result.success) {
+    logFetchFailure(url, ClientErrorCode.MalformedResponse, result.error.message, response.status);
     throw new ApiError(
       ClientErrorCode.MalformedResponse,
       "The server returned data in an unexpected format.",

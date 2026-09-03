@@ -91,4 +91,36 @@ describe("apiGet", () => {
       expect((error as ApiError).isNotFound).toBe(true);
     }
   });
+
+  it("logs the upstream error's code/status/requestId server-side on a non-2xx response", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockFetchOnce({
+      ok: false,
+      status: 503,
+      json: async () => ({
+        error: { code: "DOWNSTREAM_NOT_CONFIGURED", message: "not configured", requestId: "req-9" },
+      }),
+    });
+
+    await expect(apiGet("/api/v1/services/catalog", { schema: itemSchema })).rejects.toBeInstanceOf(ApiError);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("/api/v1/services/catalog"),
+      expect.objectContaining({ status: 503, code: "DOWNSTREAM_NOT_CONFIGURED", requestId: "req-9" }),
+    );
+    errorSpy.mockRestore();
+  });
+
+  it("logs a network failure server-side without swallowing it silently", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")));
+
+    await expect(apiGet("/api/v1/services/catalog", { schema: itemSchema })).rejects.toBeInstanceOf(ApiError);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("/api/v1/services/catalog"),
+      expect.objectContaining({ code: ClientErrorCode.NetworkError }),
+    );
+    errorSpy.mockRestore();
+  });
 });
